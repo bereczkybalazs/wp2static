@@ -661,6 +661,17 @@ class Controller {
         }
     }
 
+    public static function getPostRequestBody(): array {
+        $postRequestBody = [
+            'message' => 'WP2Static deployment complete!'
+        ];
+        $hasZipPlugin = in_array('wp2static-addon-zip/wp2static-addon-zip.php', get_option( 'active_plugins' ));
+        if ($hasZipPlugin) {
+            $postRequestBody['zip_url'] = SiteInfo::getUrl( 'uploads' ) . 'wp2static-processed-site.zip';
+        }
+        return $postRequestBody;
+    }
+
     public static function webhookDeployNotification() : void {
         $webhook_url = CoreOptions::getValue( 'completionWebhook' );
 
@@ -672,7 +683,7 @@ class Controller {
 
         $http_method = CoreOptions::getValue( 'completionWebhookMethod' );
 
-        $body = $http_method === 'POST' ? 'WP2Static deployment complete!' :
+        $body = $http_method === 'POST' ? self::getPostRequestBody() :
             [ 'message' => 'WP2Static deployment complete!' ];
 
         $webhook_response = wp_remote_request(
