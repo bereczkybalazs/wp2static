@@ -683,18 +683,30 @@ class Controller {
 
         $http_method = CoreOptions::getValue( 'completionWebhookMethod' );
 
-        $body = $http_method === 'POST' ? self::getPostRequestBody() :
-            [ 'message' => 'WP2Static deployment complete!' ];
+        if ($http_method === 'POST') {
+            $webhook_response = wp_remote_post($webhook_url, [
+                'headers'     => [
+                    'Content-Type' => 'application/json; charset=utf-8'
+                ],
+                'body'        => json_encode(self::getPostRequestBody()),
+                'method'      => 'POST',
+                'data_format' => 'body',
+            ]);
+        } else {
+            $webhook_response = wp_remote_request(
+                $webhook_url,
+                [
+                    'headers' => [
+                        'Content-Type'   => 'application/json',
+                    ],
+                    'method' => CoreOptions::getValue( 'completionWebhookMethod' ),
+                    'timeout' => 30,
+                    'user-agent' => 'WP2Static.com',
+                    'body' => [ 'message' => 'WP2Static deployment complete!' ],
+                ]
+            );
+        }
 
-        $webhook_response = wp_remote_request(
-            $webhook_url,
-            [
-                'method' => CoreOptions::getValue( 'completionWebhookMethod' ),
-                'timeout' => 30,
-                'user-agent' => 'WP2Static.com',
-                'body' => $body,
-            ]
-        );
 
         WsLog::l(
             'Webhook response code: ' . wp_remote_retrieve_response_code( $webhook_response )
