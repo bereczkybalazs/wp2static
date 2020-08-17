@@ -663,7 +663,8 @@ class Controller {
 
     public static function getPostRequestBody(): array {
         $postRequestBody = [
-            'message' => 'WP2Static deployment complete!'
+            'message' => 'WP2Static deployment complete!',
+            'deploy_host_url' => CoreOptions::getValue('deploymentURL')
         ];
         $hasZipPlugin = in_array('wp2static-addon-zip/wp2static-addon-zip.php', get_option( 'active_plugins' ));
         if ($hasZipPlugin) {
